@@ -84,9 +84,9 @@ class SSDPredictShow():
         detections = detections.cpu().detach().numpy()
 
         # 조건 이상의 값을 추출
-        find_index = np.where(detections[:, 0:, :, 0] >= data_confidence_level)
-        detections = detections[find_index]
-        for i in range(len(find_index[1])):  # 추출한 물체수만큼 루프를 돈다
+        find_index = np.where(detections[:, 0:, :, 0] >= data_confidence_level) # axis 별로 해당하는 좌표가 튜플 형태로 반환
+        detections = detections[find_index] # 각 BBox 추출
+        for i in range(len(find_index[1])):  # 추출한 물체수만큼 루프를 돈다 어떤 axis이든 len(find_index[i])는 같다. (해당하는 물체 수 만큼 반환)
             if (find_index[1][i]) > 0:  # 배경 클래스가 아닌 것
                 sc = detections[i][0]  # 신뢰도
                 bbox = detections[i][1:] * [width, height, width, height]

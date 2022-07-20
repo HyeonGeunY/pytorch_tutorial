@@ -616,16 +616,17 @@ def nm_suppression(boxes, scores, overlap=0.45, top_k=200):
 
     return keep, count
 
-
 # SSD 추론시에 conf와 loc의 출력에서 겹침(중복)을 제거한 BBox를 출력한다
-class Detect(Function):
+class Detect(nn.Module): #error torch.autograd.Function -> nn.Module 상속으로 바꾼다.
 
     def __init__(self, conf_thresh=0.01, top_k=200, nms_thresh=0.45):
+        super(Detect, self).__init__()
         self.softmax = nn.Softmax(dim=-1)  # conf를 소프트맥스 함수로 정규화하기 위해 준비
         self.conf_thresh = conf_thresh  # conf가 conf_thresh=0.01보다 높은 DBox만을 취급
         self.top_k = top_k  # nm_supression으로 conf가 높은 top_k개의 계산에 사용하는, top_k = 200
         self.nms_thresh = nms_thresh  # nm_supression으로 IOU가 nms_thresh=0.45보다 크면 동일한 물체의 BBox로 간주
-
+    
+    
     def forward(self, loc_data, conf_data, dbox_list):
         """
         순전파 계산을 수행한다.
@@ -697,7 +698,7 @@ class Detect(Function):
 
                 # 3. Non-Maximum Suppression를 실시하여, 겹치는 BBox를 제거
                 ids, count = nm_suppression(
-                    boxes, scores, self.nms_thresh, self.top_k)
+                    boxes.detach(), scores.detach(), self.nms_thresh, self.top_k) #error boxes와 scores에 detach()를 추가한다.
                 # ids: conf의 내림차순으로 Non-Maximum Suppression를 통과한 index가 저장됨
                 # count: Non-Maximum Suppression를 통과한 BBox 수
 
